@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>CRUD CESDE _SQL Database _HTML5 _ JavaScript (jQuery)</title>
+    <meta name="viewport" content="user-scalable=no,width=device-width" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+    <script src="https://code.jquery.com/jquery-2.2.4.js" integrity="sha256-iT6Q9iMJYuQiMWNd9lDyBUStIq/8PuOW33aOqmvFpqI=" crossorigin="anonymous"></script>
+    <!-- <script type="text/javascript" src="js/jquery.js"></script> -->
+</head>
+
+<body style="margin:30px">
+    <!--
+Cómo ver datos Web SQL:
+0. Ejecute el código fuente anterior en su navegador
+1. Presione Ctrl + Mayús + I
+2. Haga clic en la pestaña "Aplicación"
+3. Haga doble clic en "Web SQL" y luego haga clic en cesde (nombre de nuestra base de datos)
+-->
+
+    <div class="container">
+        <h2 class="mt-5 mb-5">CRUD CESDE _SQL Database _HTML5 _ JavaScript (jQuery)</h2>
+        <hr>
+        <br>
+        <div class="row">
+            <form>
+                <fieldset>
+                    <legend>Nombre del curso </legend>
+                    <input type="text" class="form-control" name="curso" id="curso">
+
+                    <legend>Descripción del curso </legend>
+                    <input type="text" class="form-control" name="descripcion" id="descripcion">
+
+                    <legend>Duración del curso en semanas </legend>
+                    <input type="number" class="form-control" name="duracion" id="duracion">
+
+                    <legend>Precio del curso </legend>
+                    <input type="number" class="form-control" id="Precio" name="Precio">
+
+                    <legend>Fecha de inicio del curso </legend>
+                    <input type="datetime" class="form-control" name="fecha" id="fecha">
+
+                    <legend>Docente que dicta el curso </legend>
+
+                    <input type="text" class="form-control" name="docente" id="docente">
+
+                    <legend>Documento Docente </legend>
+
+                    <input type="number" class="form-control" name="documento" id="documento">
+
+                    <legend>Correo Docente </legend>
+
+                    <input type="email" class="form-control" name="email" id="email">
+
+                    <br>
+
+                    <button type="button" id="insert" class="btn btn-success">Insertar</button>
+
+                    <button type="button" id="create" class="btn btn-success">Crear tabla</button>
+
+                    <button type="button" id="remove" class="btn btn-danger">Eliminar tabla</button>
+
+                    <button type="button" id="list" class="btn btn-success">Obtener registro</button>
+                    <p><small><b>Nota:</b> La tabla debe crearse primero antes de insertar o realizar cualquier transacción</small></p>
+                </fieldset>
+            </form>
+
+            <hr>
+            <h4>Registro</h4>
+            <table class="table table-bordered table-hover" id="itemlist">
+            </table>
+        </div>
+    </div>
+
+
+
+    <script type="text/javascript">
+        var db = openDatabase("cesde", "1.0", "cesde", 65535); // cesde es el nombre de la base de datos
+
+
+        $(function() {
+
+            loadData(); //cargando nuestros registros
+
+
+
+            //LA CREACIÓN DE TABLA COMIENZA AQUÍ
+
+            $("#create").click(function() {
+                db.transaction(function(transaction) {
+                    var sql = "CREATE TABLE cursos " +
+                        "(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT," +
+                        "curso VARCHAR(30) NOT NULL," +
+                        "descripcion VARCHAR(30) NOT NULL," +
+                        "duracion VARCHAR(50) NOT NULL," +
+                        "Precio int(30) NOT NULL," +
+                        "fecha  datetime," +
+                        " docente VARCHAR(30) NOT NULL," +
+                        "documento int (30) NOT NULL," +
+                        "email VARCHAR(50) NOT NULL," +
+                        "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
+                        " updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)";
+
+                    transaction.executeSql(sql, undefined, function() {
+                        alert("La tabla se crea correctamente");
+                    }, function() {
+                        alert("Ya se está creando la tabla");
+                    })
+                });
+            });
+            // LA TABLA DE CREACIÓN TERMINA AQUÍ
+
+            //LA TABLA DE ELIMINACIÓN COMIENZA AQUÍ
+            $("#remove").click(function() {
+
+                if (!confirm("¿Estás segura de eliminar esta tabla?", "")) return;;
+                db.transaction(function(transaction) {
+                    var sql = "DROP TABLE cursos";
+                    transaction.executeSql(sql, undefined, function() {
+                        alert("La tabla se eliminó con éxito")
+                    }, function(transaction, err) {
+                        alert(err.message);
+                    })
+                });
+            });
+            //LA TABLA DE ELIMINACIÓN TERMINA AQUÍ
+
+
+
+            //INSERCIÓN DE DATOS EN LA TABLA
+
+            $("#insert").click(function() {
+                    var curso = $("#curso").val();
+                    var descripcion = $("#descripcion").val();
+                    var duracion = $("#duracion").val();
+                    var Precio = $("#Precio").val();
+                    var fecha = $("#fecha").val();
+                    var docente = $("#docente").val();
+                    var documento = $("#documento").val();
+                    var email = $("#email").val();
+
+
+
+                    db.transaction(function(transaction) {
+                        var sql = "INSERT INTO cursos(curso,descripcion,duracion,Precio,fecha,docente,documento,email) VALUES(?,?,?,?,?,?,?,?)";
+                        transaction.executeSql(sql, [curso, descripcion, duracion, Precio, fecha, docente, documento, email], function() {
+                            alert("El nuevo elemento se agregó con éxito");
+                        }, function(transaction, err) {
+                            alert(err.message);
+                        })
+                    })
+                })
+                //LA INSERCIÓN DE DATOS TERMINA AQUÍ
+
+
+            //OBTENER NUESTRO REGISTRO
+            $("#list").click(function() {
+                loadData();
+            })
+
+
+
+            //FUNCIÓN PARA CARGAR NUESTROS REGISTROS
+            function loadData() {
+                $("#itemlist").children().remove();
+                db.transaction(function(transaction) {
+                    var sql = "SELECT * FROM cursos ORDER BY id DESC";
+                    transaction.executeSql(sql, undefined, function(transaction, result) {
+                        if (result.rows.length) {
+
+                            for (var i = 0; i < result.rows.length; i++) {
+                                var row = result.rows.curso(i);
+                                var curso = row.item;
+                                var id = row.id;
+                                var descripcion = row.descripcion;
+                                var duracion = row.duracion;
+                                var Precio = row.Precio;
+                                var fecha = row.fecha;
+                                var docente = row.docente;
+                                var documento = row.documento;
+                                var email = row.email;
+
+                                $("#itemlist").append('<tr id="del' + id + '"><td>' + id + '</td><td>' + curso + '</td><td id="newcurso' + id + '">' + curso + '<tr id="del' + id + '"><td>' + id + '</td><td>' + descripcion + '</td><td id="newdescripcion' + id + '">' + descripcion + '<tr id="del' + id + '"><td>' + id + '</td><td>' + duracion + '</td><td id="newduracion' + id + '">' + duracion + '<tr id="del' + id + '"><td>' + id + '</td><td>' + Precio + '</td><td id="newPrecio' + id + '">' + Precio + '<tr id="del' + id + '"><td>' + id + '</td><td>' + fecha + '</td><td id="newfecha' + id + '">' + fecha + '<tr id="del' + id + '"><td>' + id + '</td><td>' + docente + '</td><td id="newdocente' + id + '">' + docente + '<tr id="del' + id + '"><td>' + id + '</td><td>' + documento + '</td><td id="newdocumento' + id + '">' + documento + '<tr id="del' + id + '"><td>' + id + '</td><td>' + email + '</td><td id="newemail' + id + '">' + email + '</td><td><a href="#" class="btn btn-danger deleteitem" data-id="' + id + '">Delete</a> <a href="#" class="btn btn-primary updateitem" data-id="' + id + '">Update</a></td></tr>');
+                            }
+                        } else {
+                            $("#itemlist").append('<tr><td colspan="3" align="center">Curso No Encontrado</td></tr>');
+                        }
+                    }, function(transaction, err) {
+                        alert('No se encontró ninguna tabla. Haga clic en "Crear tabla" para crear una tabla ahora');
+                    })
+                })
+
+                //setTimeout se usó para ejecutar códigos dentro de él para que se carguen después de que se carguen/recuperen los registros.
+                // eliminar cursos
+
+                setTimeout(function() {
+                    $(".deleteitem").click(function() {
+                            var sure = confirm("¿Estás segura de eliminar este curso?");
+                            if (sure === true) {
+                                var id = $(this).data("id");
+                                db.transaction(function(transaction) {
+                                    var sql = "DELETE FROM cursos where id=?";
+                                    transaction.executeSql(sql, [id], function() {
+                                        $("#del" + id).fadeOut();
+                                        alert("El curso se eliminó con éxito");
+                                    }, function(transaction, err) {
+                                        alert(err.message);
+                                    })
+                                });
+                            }
+                        })
+                        // actualizar los campos de los cursos
+                    $(".updateitem").click(function() {
+                        var curso = prompt("Por favor ingrese un nuevo curso", 1);
+                        if (curso !== null) {
+                            var id = $(this).data("id");
+                            db.transaction(function(transaction) {
+                                var sql = "UPDATE cursos SET curso=? where id=?";
+                                transaction.executeSql(sql, [curso, id], function() {
+                                    $("#newcurso" + id).html(curso);
+                                    alert("El curso se actualizó con éxito");
+                                }, function(transaction, err) {
+                                    alert(err.message);
+                                })
+                            });
+                        }
+
+                        var descripcion = prompt("Por favor ingrese una descripcion", 1);
+                        if (descripcion !== null) {
+                            var id = $(this).data("id");
+                            db.transaction(function(transaction) {
+                                var sql = "UPDATE cursos SET descripcion=? where id=?";
+                                transaction.executeSql(sql, [descripcion, id], function() {
+                                    $("#newdescripcion" + id).html(descripcion);
+                                    alert("la descripcion se actualizó con éxito");
+                                }, function(transaction, err) {
+                                    alert(err.message);
+                                })
+                            });
+                        }
+
+                        var duracion = prompt("Por favor ingrese una duracion", 1);
+                        if (duracion !== null) {
+                            var id = $(this).data("id");
+                            db.transaction(function(transaction) {
+                                var sql = "UPDATE cursos SET duracion=? where id=?";
+                                transaction.executeSql(sql, [duracion, id], function() {
+                                    $("#newduracion" + id).html();
+                                    alert("la duracion se actualizó con éxito");
+                                }, function(transaction, err) {
+                                    alert(err.message);
+                                })
+                            });
+                        }
+
+                        var Precio = prompt("Por favor ingrese un Precio", 1);
+                        if (Precio !== null) {
+                            var id = $(this).data("id");
+                            db.transaction(function(transaction) {
+                                var sql = "UPDATE cursos SET Precio=? where id=?";
+                                transaction.executeSql(sql, [Precio, id], function() {
+                                    $("#newPrecio" + id).html(Precio);
+                                    alert("El Precio se actualizó con éxito");
+                                }, function(transaction, err) {
+                                    alert(err.message);
+                                })
+                            });
+                        }
+
+                        var fecha = prompt("Por favor ingrese una fecha", 1);
+                        if (fecha !== null) {
+                            var id = $(this).data("id");
+                            db.transaction(function(transaction) {
+                                var sql = "UPDATE cursos SET fecha=? where id=?";
+                                transaction.executeSql(sql, [fecha, id], function() {
+                                    $("#newfecha" + id).html(fecha);
+                                    alert("la fecha se actualizó con éxito");
+                                }, function(transaction, err) {
+                                    alert(err.message);
+                                })
+                            });
+                        }
+
+                        var docente = prompt("Por favor ingrese un nombre de docente", 1);
+                        if (docente !== null) {
+                            var id = $(this).data("id");
+                            db.transaction(function(transaction) {
+                                var sql = "UPDATE cursos SET docente=? where id=?";
+                                transaction.executeSql(sql, [docente, id], function() {
+                                    $("#newdocente" + id).html(docente);
+                                    alert("El nomnre del docente se actualizó con éxito");
+                                }, function(transaction, err) {
+                                    alert(err.message);
+                                })
+                            });
+                        }
+
+                        var documento = prompt("Por favor ingrese un documento del docente", 1);
+                        if (documento !== null) {
+                            var id = $(this).data("id");
+                            db.transaction(function(transaction) {
+                                var sql = "UPDATE cursos SET documento=? where id=?";
+                                transaction.executeSql(sql, [documento, id], function() {
+                                    $("#newdocumento" + id).html(documento);
+                                    alert("El documento del docente se actualizó con éxito");
+                                }, function(transaction, err) {
+                                    alert(err.message);
+                                })
+                            });
+                        }
+
+                        var email = prompt("Por favor ingrese un nuevo curso", 1);
+                        if (email !== null) {
+                            var id = $(this).data("id");
+                            db.transaction(function(transaction) {
+                                var sql = "UPDATE cursos SET email=? where id=?";
+                                transaction.executeSql(sql, [email, id], function() {
+                                    $("#newemail" + id).html(email);
+                                    alert("El email se actualizó con éxito");
+                                }, function(transaction, err) {
+                                    alert(err.message);
+                                })
+                            });
+                        }
+                    })
+                }, 1000);
+            }
+            //fin de la funcion loadData() 
+        });
+    </script>
+</body>
+
+</html>
