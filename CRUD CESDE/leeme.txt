@@ -1,0 +1,8 @@
+CRUD Cursos cesde (Create, Read, Update, Delete) en JavaScript.
+CRUD funcional en JavaScript para gestionar una lista de Cursos de CESDE.
+las funciones básicas para realizar las operaciones CRUD utilizando localStorage en JavaScript.
+utilizando funciones para guardar, obtener, actualizar y eliminar los datos de los Cursos en localStorage.
+
+utilizando la API de localStorage
+utilizando javascript vanilla
+utilizando el framework bootstrap 5
